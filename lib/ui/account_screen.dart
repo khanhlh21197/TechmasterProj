@@ -28,8 +28,10 @@ class _AccountScreenState extends State<AccountScreen> {
         onTap: () {
           FocusScope.of(context).requestFocus(FocusNode());
         },
-        child: Container(
-          child: buildBody(),
+        child: SingleChildScrollView(
+          child: Container(
+            child: buildBody(),
+          ),
         ),
       ),
     );
@@ -38,6 +40,7 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget buildBody() {
     return Column(
       children: [
+        SizedBox(height: 25),
         buildImage(),
         SizedBox(
           height: 30,
@@ -82,14 +85,22 @@ class _AccountScreenState extends State<AccountScreen> {
     return Stack(
       alignment: AlignmentDirectional.center,
       children: [
-        CircleAvatar(
-          radius: 50.0,
-          child: Image.asset('assets/logo.png'),
-          backgroundColor: Colors.transparent,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(65),
+          child: Image.asset(
+            'assets/logo.png',
+            width: 150,
+            height: 150,
+            fit: BoxFit.cover,
+          ),
         ),
-        Icon(
-          Icons.camera_alt,
-          color: Colors.green,
+        Positioned(
+          bottom: 5,
+          right: 5,
+          child: Icon(
+            Icons.camera_alt,
+            color: Colors.green,
+          ),
         ),
       ],
     );

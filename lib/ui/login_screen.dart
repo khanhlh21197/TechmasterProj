@@ -52,47 +52,44 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       child: Column(
         children: [
-          SingleChildScrollView(
-            child: Expanded(
-              child: Column(
-                children: [
-                  SizedBox(height: 64),
-                  Image.asset(
-                    'assets/logo.png',
-                    width: 128,
-                    fit: BoxFit.cover,
-                  ),
-                  SizedBox(height: 16),
-                  buildTextField('Số điện thoại', Icon(Icons.phone_android),
-                      TextInputType.text, phoneController),
-                  SizedBox(height: 16),
-                  buildTextField('Mật khẩu', Icon(Icons.vpn_key),
-                      TextInputType.visiblePassword, passwordController),
-                  SizedBox(height: 16),
-                  buildButton(),
-                  RaisedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChangePasswordScreen()));
-                    },
-                    child: Text('Doi mat khau'),
-                  ),
-                  RaisedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => AccountScreen()));
-                    },
-                    child: Text('Account'),
-                  ),
-                ],
-              ),
+          Expanded(
+            child: Column(
+              children: [
+                SizedBox(height: 64),
+                Image.asset(
+                  'assets/logo.png',
+                  width: 128,
+                  fit: BoxFit.cover,
+                ),
+                SizedBox(height: 16),
+                buildTextField('Số điện thoại', Icon(Icons.phone_android),
+                    TextInputType.text, phoneController),
+                SizedBox(height: 16),
+                buildTextField('Mật khẩu', Icon(Icons.vpn_key),
+                    TextInputType.visiblePassword, passwordController),
+                SizedBox(height: 16),
+                buildButton(),
+                RaisedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ChangePasswordScreen()));
+                  },
+                  child: Text('Doi mat khau'),
+                ),
+                RaisedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AccountScreen()));
+                  },
+                  child: Text('Account'),
+                ),
+              ],
             ),
           ),
-          // buildHotline(),
           buildHotline2(),
           SizedBox(height: 20),
         ],

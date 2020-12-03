@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'file:///D:/KhanhLH/techmaster_lesson_2/lib/model/user.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Container(
+          width: MediaQuery.of(context).size.width,
           child: buildBody(),
         ),
       ),
@@ -52,40 +54,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget buildBody() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SingleChildScrollView(
-          child: Expanded(
-            child: Column(
-              children: [
-                SizedBox(height: 64),
-                Image.asset(
-                  'assets/logo.png',
-                  width: 128,
-                  fit: BoxFit.cover,
-                ),
-                SizedBox(height: 16),
-                buildTextField('Họ tên', Icon(Icons.person), TextInputType.text,
-                    nameController),
-                SizedBox(height: 16),
-                buildTextField('Số điện thoại', Icon(Icons.phone_android),
-                    TextInputType.text, phoneController),
-                SizedBox(height: 16),
-                buildTextField('Mật khẩu', Icon(Icons.vpn_key),
-                    TextInputType.text, passwordController,
-                    obscureText: true),
-                SizedBox(height: 16),
-                buildTextField('Email', Icon(Icons.email), TextInputType.text,
-                    emailController),
-                SizedBox(height: 16),
-                buildTextField('Địa chỉ', Icon(Icons.location_city),
-                    TextInputType.text, addressController),
-                SizedBox(height: 16),
-                buildButton(),
-              ],
-            ),
+        Expanded(
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Image.asset(
+                'assets/logo.png',
+                width: 128,
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 16),
+              buildTextField('Họ tên', Icon(Icons.person), TextInputType.text,
+                  nameController),
+              SizedBox(height: 16),
+              buildTextField('Số điện thoại', Icon(Icons.phone_android),
+                  TextInputType.text, phoneController),
+              SizedBox(height: 16),
+              buildTextField('Mật khẩu', Icon(Icons.vpn_key),
+                  TextInputType.text, passwordController,
+                  obscureText: true),
+              SizedBox(height: 16),
+              buildTextField('Email', Icon(Icons.email), TextInputType.text,
+                  emailController),
+              SizedBox(height: 16),
+              buildTextField('Địa chỉ', Icon(Icons.location_city),
+                  TextInputType.text, addressController),
+              SizedBox(height: 16),
+              buildButton(),
+            ],
           ),
         ),
-        // buildHotline(),
         buildHotline2(),
         SizedBox(height: 20),
       ],
