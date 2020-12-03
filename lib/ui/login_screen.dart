@@ -1,11 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:techmaster_lesson_2/model/user.dart';
 import 'package:techmaster_lesson_2/ui/account_screen.dart';
 import 'package:techmaster_lesson_2/ui/change_password_screen.dart';
 import 'package:techmaster_lesson_2/ui/contact_screen.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
-
-import 'file:///D:/KhanhLH/techmaster_lesson_2/lib/model/user.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -28,13 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text("Đăng nhập"),
-        centerTitle: true,
       ),
       body: InkWell(
         splashColor: Colors.transparent,
@@ -149,12 +149,14 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 36,
           child: RaisedButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => HomeScreen(),
-                ),
-              );
+              var user = User(
+                  name: '',
+                  phone: phoneController.text,
+                  password: passwordController.text,
+                  email: '',
+                  address: '',
+                  userName: '');
+              login(user.toJson());
             },
             child: Text(
               'Đăng nhập',
@@ -197,7 +199,33 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-// Future<http.Response> login(){
-//   return http.get(url)
-// }
+  Future<http.Response> login(Map json) async {
+    final response = await http
+        .post('http://report.bekhoe.vn/api/accounts/login', body: json);
+    print('_LoginScreenState.login: ${response.body}');
+
+    Map responseMap = jsonDecode(response.body);
+    print('_LoginScreenState.login ${responseMap['code'] == 0}');
+    if (responseMap['code'] == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
+    } else {
+      print('_LoginScreenState.login: ${responseMap['message']}');
+    }
+    // APIResponse apiResponse = APIResponse.fromJson(jsonDecode(response.body));
+    // if (apiResponse.code == '0') {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => HomeScreen(),
+    //     ),
+    //   );
+    // } else {
+    //   print('_LoginScreenState.login: ${apiResponse.message}');
+    // }
+  }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-import 'file:///D:/KhanhLH/techmaster_lesson_2/lib/model/user.dart';
+import 'package:techmaster_lesson_2/model/user.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -186,11 +185,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           phone: phone,
           password: password,
           email: email,
-          address: address);
-      final response = await http.put(
+          address: address,
+          userName: '');
+      final response = await http.post(
           'http://report.bekhoe.vn/api/accounts/Register',
           body: user.toJson());
-      print(response);
+      print('_SignUpScreenState.register: ${response.body}');
       Navigator.pop(context, user);
     } else {
       Scaffold.of(_scaffoldKey.currentContext).showSnackBar(
