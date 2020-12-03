@@ -28,22 +28,30 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: InkWell(
-        splashColor: Colors.transparent,
-        onTap: () {
-          FocusScope.of(context).requestFocus(FocusNode());
-        },
-        child: SafeArea(
-          child: buildBody(),
-        ),
+      body: Stack(
+        children: [
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            resizeToAvoidBottomPadding: false,
+            appBar: AppBar(
+              elevation: 0.0,
+              backgroundColor: Colors.transparent,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: InkWell(
+              splashColor: Colors.transparent,
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+              },
+              child: SafeArea(
+                child: buildBody(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -53,41 +61,43 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         children: [
           Expanded(
-            child: Column(
-              children: [
-                SizedBox(height: 64),
-                Image.asset(
-                  'assets/logo.png',
-                  width: 128,
-                  fit: BoxFit.cover,
-                ),
-                SizedBox(height: 16),
-                buildTextField('Số điện thoại', Icon(Icons.phone_android),
-                    TextInputType.text, phoneController),
-                SizedBox(height: 16),
-                buildTextField('Mật khẩu', Icon(Icons.vpn_key),
-                    TextInputType.visiblePassword, passwordController),
-                SizedBox(height: 16),
-                buildButton(),
-                RaisedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ChangePasswordScreen()));
-                  },
-                  child: Text('Doi mat khau'),
-                ),
-                RaisedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AccountScreen()));
-                  },
-                  child: Text('Account'),
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(height: 64),
+                  Image.asset(
+                    'assets/logo.png',
+                    width: 128,
+                    fit: BoxFit.cover,
+                  ),
+                  SizedBox(height: 16),
+                  buildTextField('Số điện thoại', Icon(Icons.phone_android),
+                      TextInputType.text, phoneController),
+                  SizedBox(height: 16),
+                  buildTextField('Mật khẩu', Icon(Icons.vpn_key),
+                      TextInputType.visiblePassword, passwordController),
+                  SizedBox(height: 16),
+                  buildButton(),
+                  RaisedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChangePasswordScreen()));
+                    },
+                    child: Text('Doi mat khau'),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AccountScreen()));
+                    },
+                    child: Text('Account'),
+                  ),
+                ],
+              ),
             ),
           ),
           buildHotline2(),

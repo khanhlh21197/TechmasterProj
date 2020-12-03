@@ -27,7 +27,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         backgroundColor: Colors.green,
         leading: IconButton(
@@ -53,36 +52,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget buildBody() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Column(
-            children: [
-              SizedBox(height: 20),
-              Image.asset(
-                'assets/logo.png',
-                width: 128,
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 16),
-              buildTextField('Họ tên', Icon(Icons.person), TextInputType.text,
-                  nameController),
-              SizedBox(height: 16),
-              buildTextField('Số điện thoại', Icon(Icons.phone_android),
-                  TextInputType.text, phoneController),
-              SizedBox(height: 16),
-              buildTextField('Mật khẩu', Icon(Icons.vpn_key),
-                  TextInputType.text, passwordController,
-                  obscureText: true),
-              SizedBox(height: 16),
-              buildTextField('Email', Icon(Icons.email), TextInputType.text,
-                  emailController),
-              SizedBox(height: 16),
-              buildTextField('Địa chỉ', Icon(Icons.location_city),
-                  TextInputType.text, addressController),
-              SizedBox(height: 16),
-              buildButton(),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                Image.asset(
+                  'assets/logo.png',
+                  width: 128,
+                  fit: BoxFit.cover,
+                ),
+                SizedBox(height: 16),
+                buildTextField('Họ tên', Icon(Icons.person), TextInputType.text,
+                    nameController),
+                SizedBox(height: 16),
+                buildTextField('Số điện thoại', Icon(Icons.phone_android),
+                    TextInputType.text, phoneController),
+                SizedBox(height: 16),
+                buildTextField('Mật khẩu', Icon(Icons.vpn_key),
+                    TextInputType.text, passwordController,
+                    obscureText: true),
+                SizedBox(height: 16),
+                buildTextField('Email', Icon(Icons.email), TextInputType.text,
+                    emailController),
+                SizedBox(height: 16),
+                buildTextField('Địa chỉ', Icon(Icons.location_city),
+                    TextInputType.text, addressController),
+                SizedBox(height: 16),
+                buildButton(),
+              ],
+            ),
           ),
         ),
         buildHotline2(),
