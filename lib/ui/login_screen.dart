@@ -41,8 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
-            body: InkWell(
-              splashColor: Colors.transparent,
+            body: GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(FocusNode());
               },
