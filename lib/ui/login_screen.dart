@@ -9,14 +9,32 @@ import 'package:techmaster_lesson_2/ui/contact_screen.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
 
+import '../loader.dart';
+import '../navigator.dart';
+import '../shared_prefs_helper.dart';
+
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+  SharedPrefsHelper sharedPrefs;
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    sharedPrefs = SharedPrefsHelper();
+    getSharedPrefsValue();
+    super.initState();
+  }
+
+  void getSharedPrefsValue() async {
+    phoneController.text = await sharedPrefs.getStringValuesSF('phone');
+    passwordController.text = await sharedPrefs.getStringValuesSF('pass');
+  }
 
   @override
   void dispose() {
@@ -165,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   email: '',
                   address: '',
                   userName: '');
-              login(user.toJson());
+              tryLogin(user.toJson());
             },
             child: Text(
               'Đăng nhập',
@@ -208,20 +226,19 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<http.Response> login(Map json) async {
+  Future<void> tryLogin(Map json) async {
+    showLoadingDialog();
     final response = await http
         .post('http://report.bekhoe.vn/api/accounts/login', body: json);
     print('_LoginScreenState.login: ${response.body}');
 
     Map responseMap = jsonDecode(response.body);
-    print('_LoginScreenState.login ${responseMap['code'] == 0}');
     if (responseMap['code'] == 0) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(),
-        ),
-      );
+      await sharedPrefs.addStringToSF('phone', phoneController.text);
+      await sharedPrefs.addStringToSF('pass', passwordController.text);
+      hideLoadingDialog();
+      print('_LoginScreenState.tryLogin O day');
+      navigatorPush(context, HomeScreen());
     } else {
       print('_LoginScreenState.login: ${responseMap['message']}');
     }
@@ -236,5 +253,13 @@ class _LoginScreenState extends State<LoginScreen> {
     // } else {
     //   print('_LoginScreenState.login: ${apiResponse.message}');
     // }
+  }
+
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 }
