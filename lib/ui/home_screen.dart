@@ -1,11 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/drawer_item.dart';
 import 'package:techmaster_lesson_2/model/issue.dart';
-import 'package:techmaster_lesson_2/model/response.dart';
+import 'package:techmaster_lesson_2/model/issue_response.dart';
 import 'package:techmaster_lesson_2/navigator.dart';
+import 'package:techmaster_lesson_2/shared_prefs_helper.dart';
+import 'package:techmaster_lesson_2/ui/account_screen.dart';
 import 'package:techmaster_lesson_2/ui/change_password_screen.dart';
 import 'package:techmaster_lesson_2/ui/contact_screen.dart';
 import 'package:techmaster_lesson_2/ui/report_screen.dart';
@@ -18,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const API_URL = 'http://report.bekhoe.vn';
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final icons = [
     Icons.menu,
@@ -47,12 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<DrawerItem> drawerItems = List();
   List<Issue> issues = List();
+  SharedPrefsHelper sharedPrefsHelper;
 
   @override
   void initState() {
     for (int i = 0; i < icons.length; i++) {
       drawerItems.add(DrawerItem(icons[i], titles[i]));
     }
+    sharedPrefsHelper = SharedPrefsHelper();
     getIssues();
     super.initState();
   }
@@ -60,8 +66,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green,
       key: _scaffoldKey,
       appBar: new AppBar(
+        title: Text(
+          'Sự cố',
+        ),
+        centerTitle: true,
         backgroundColor: Colors.green,
         leading: new IconButton(
           icon: new Icon(Icons.menu),
@@ -101,49 +112,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildInfo() {
-    return Container(
-      color: Colors.green,
-      padding: const EdgeInsets.symmetric(
-        vertical: 8,
-        horizontal: 16,
-      ),
-      height: 70,
-      width: double.infinity,
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.asset(
-              'assets/logo.png',
-              width: 30,
-              height: 30,
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pop();
+        navigatorPush(context, AccountScreen());
+      },
+      child: Container(
+        color: Colors.green,
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 16,
+        ),
+        height: 70,
+        width: double.infinity,
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                'assets/logo.png',
+                width: 30,
+                height: 30,
+              ),
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.only(
-              left: 10,
-            ),
-            height: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Khanh Le',
-                  style: TextStyle(
-                    color: Colors.white,
+            Container(
+              margin: const EdgeInsets.only(
+                left: 10,
+              ),
+              height: double.infinity,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Khanh Le',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  '0963003197',
-                  style: TextStyle(
-                    color: Colors.white,
+                  Text(
+                    '0963003197',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -181,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (index) {
       case 0:
         Navigator.of(context).pop();
+        setState(() {});
         break;
       case 1:
       case 2:
@@ -218,37 +236,171 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildBody() {
+    return FutureBuilder(
+      future: DefaultAssetBundle.of(context).loadString('assets/test.json'),
+      builder: (context, snapshot) {
+        IssueResponse issueResponse =
+            IssueResponse.fromJson(jsonDecode(snapshot.data));
+        issues = issueResponse.data.map((e) => Issue.fromJson(e)).toList();
+        print('_HomeScreenState.buildBody ${issues.length}');
+        // issues = issueResponse.data.map((e) => Issue.fromJson(e)).toList();
+        return issues.isNotEmpty
+            ? Container(
+                margin: const EdgeInsets.symmetric(vertical: 16),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemBuilder: (ctx, index) => buildItem(issues[index]),
+                  itemCount: issues.length,
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Container(
+                      height: 15,
+                    );
+                  },
+                ),
+              )
+            : Center(
+                child: CircularProgressIndicator(),
+              );
+      },
+    );
+  }
+
+  Widget buildItem(Issue issue) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
         color: Colors.white,
       ),
-      child: ListView.builder(
-        itemBuilder: (ctx, index) => buildItem(),
-        itemCount: issues.length,
-      ),
-    );
-  }
-
-  Widget buildItem() {
-    return Container(
       child: Column(
         children: [
           Row(
-            children: [],
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        'assets/logo.png',
+                        width: 30,
+                        height: 30,
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(
+                        left: 10,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Khanh Le',
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                          ),
+                          Text(
+                            '0963003197',
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text('adfadsfadsf'),
+            ],
           ),
+          horizontalLine(),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                issue.title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                issue.content,
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          buildListImage(issue.photos),
         ],
       ),
     );
   }
 
+  Widget buildListImage(List<dynamic> photos) {
+    print('_HomeScreenState.buildListImage ${photos.toString()}');
+    return photos.isNotEmpty
+        ? Container(
+            child: GridView.builder(
+              shrinkWrap: true,
+              itemCount: photos.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: getCrossAxisCount(photos.length),
+                crossAxisSpacing: 2,
+                mainAxisSpacing: 2,
+              ),
+              itemBuilder: (context, index) =>
+                  buildImageItem(photos[index].toString()),
+            ),
+          )
+        : Container();
+  }
+
+  Widget buildImageItem(String url) {
+    return Container(
+      child: Image.network(
+        '$API_URL$url',
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  int getCrossAxisCount(int itemCount) {
+    if (itemCount == 1) {
+      return 1;
+    }
+    if (itemCount == 2) {
+      return 2;
+    }
+    if (itemCount >= 3) {
+      return 3;
+    }
+    return 0;
+  }
+
   Future<void> getIssues() async {
+    String token = await sharedPrefsHelper.getStringValuesSF('token');
     var r = Request(5, 0);
-    String url = 'http://report.bekhoe.vn/api/issues';
-    var response = await http.post(url, body: r.toJson().toString());
-    print('_HomeScreenState.getIssues ${response.toString()}');
-    APIResponse apiResponse = jsonDecode(response.body);
-    print('_HomeScreenState.getIssues $apiResponse');
+    var queryParameters = r.toJson();
+    var uri =
+        Uri.https('http://report.bekhoe.vn', '/api/issues', queryParameters);
+    var response = await http.post(uri, headers: {
+      HttpHeaders.authorizationHeader: 'Token $token',
+      HttpHeaders.contentTypeHeader: 'application/json',
+    });
+    print('_HomeScreenState.getIssues ${response.body}');
   }
 }
 

@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/user.dart';
-import 'package:techmaster_lesson_2/ui/account_screen.dart';
-import 'package:techmaster_lesson_2/ui/change_password_screen.dart';
 import 'package:techmaster_lesson_2/ui/contact_screen.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
@@ -95,24 +93,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextInputType.visiblePassword, passwordController),
                   SizedBox(height: 16),
                   buildButton(),
-                  RaisedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChangePasswordScreen()));
-                    },
-                    child: Text('Doi mat khau'),
-                  ),
-                  RaisedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => AccountScreen()));
-                    },
-                    child: Text('Account'),
-                  ),
                 ],
               ),
             ),
@@ -236,8 +216,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (responseMap['code'] == 0) {
       await sharedPrefs.addStringToSF('phone', phoneController.text);
       await sharedPrefs.addStringToSF('pass', passwordController.text);
+      User user = User.fromJson(responseMap['data']);
+      print('_LoginScreenState.tryLogin ${user.token}');
+      await sharedPrefs.addStringToSF('token', user.token);
       hideLoadingDialog();
-      print('_LoginScreenState.tryLogin O day');
       navigatorPush(context, HomeScreen());
     } else {
       print('_LoginScreenState.login: ${responseMap['message']}');
