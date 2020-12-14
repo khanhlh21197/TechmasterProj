@@ -1,15 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:techmaster_lesson_2/model/user_response.dart';
 
 class AccountScreen extends StatefulWidget {
+  final UserResponse userResponse;
+
+  const AccountScreen({Key key, this.userResponse}) : super(key: key);
+
   @override
   _AccountScreenState createState() => _AccountScreenState();
 }
 
 class _AccountScreenState extends State<AccountScreen> {
+  static const API_URL = 'http://report.bekhoe.vn';
   final nameController = TextEditingController();
   final dobController = TextEditingController();
   final addressController = TextEditingController();
   final emailController = TextEditingController();
+
+  @override
+  void initState() {
+    nameController.text = widget.userResponse.name;
+    dobController.text = widget.userResponse.dateOfBirth;
+    addressController.text = widget.userResponse.address;
+    emailController.text = widget.userResponse.email;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +102,8 @@ class _AccountScreenState extends State<AccountScreen> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(65),
-          child: Image.asset(
-            'assets/logo.png',
+          child: Image.network(
+            '$API_URL${widget.userResponse.avatar}',
             width: 150,
             height: 150,
             fit: BoxFit.cover,
@@ -115,7 +130,7 @@ class _AccountScreenState extends State<AccountScreen> {
         children: [
           Text('Số điện thoại'),
           Text(
-            '0963003197',
+            '${widget.userResponse.phoneNumber}',
             style: TextStyle(fontSize: 16),
           ),
         ],
@@ -124,7 +139,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget buildTextField(String labelText, TextEditingController controller,
-      {bool obscureText = true}) {
+      {bool obscureText = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       margin: const EdgeInsets.symmetric(horizontal: 16),

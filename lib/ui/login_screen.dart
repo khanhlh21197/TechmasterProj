@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/user.dart';
+import 'package:techmaster_lesson_2/model/user_response.dart';
 import 'package:techmaster_lesson_2/ui/contact_screen.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
@@ -216,11 +217,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (responseMap['code'] == 0) {
       await sharedPrefs.addStringToSF('phone', phoneController.text);
       await sharedPrefs.addStringToSF('pass', passwordController.text);
-      User user = User.fromJson(responseMap['data']);
-      print('_LoginScreenState.tryLogin ${user.token}');
-      await sharedPrefs.addStringToSF('token', user.token);
+      UserResponse userResponse = UserResponse.fromJson(responseMap['data']);
+      print('_LoginScreenState.tryLogin ${userResponse.token}');
+      await sharedPrefs.addStringToSF('token', userResponse.token);
       hideLoadingDialog();
-      navigatorPush(context, HomeScreen());
+      navigatorPush(context, HomeScreen(userResponse: userResponse));
     } else {
       print('_LoginScreenState.login: ${responseMap['message']}');
     }
@@ -243,5 +244,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void hideLoadingDialog() {
     Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+  }
+
+  showAlertDialog(BuildContext context, String content) {
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Thông báo"),
+      content: Text(content),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

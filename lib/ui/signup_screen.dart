@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/user.dart';
+
+import '../loader.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -13,8 +17,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final addressController = TextEditingController();
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
   @override
   void dispose() {
@@ -36,7 +39,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         title: Text("Đăng ký"),
         centerTitle: true,
       ),
-      key: _scaffoldKey,
       body: InkWell(
         splashColor: Colors.transparent,
         onTap: () {
@@ -179,6 +181,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<http.Response> register(String phone, String name, String password,
       String email, String address) async {
     if (phone.isNotEmpty && name.isNotEmpty && password.isNotEmpty) {
+      showLoadingDialog();
       print('$phone - $name - $password');
       final user = User(
           name: name,
@@ -190,14 +193,51 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final response = await http.post(
           'http://report.bekhoe.vn/api/accounts/Register',
           body: user.toJson());
-      print('_SignUpScreenState.register: ${response.body}');
-      Navigator.pop(context, user);
+      Map responseMap = jsonDecode(response.body);
+      print('_SignUpScreenState.register ${response.body}');
+      if (responseMap['code'] == 0) {
+        Navigator.pop(context, user);
+        hideLoadingDialog();
+      } else {
+        hideLoadingDialog();
+        showAlertDialog(context, responseMap['message']);
+      }
     } else {
-      Scaffold.of(_scaffoldKey.currentContext).showSnackBar(
-        SnackBar(
-          content: Text("Vui lòng nhập đủ thông tin"),
-        ),
-      );
+      showAlertDialog(context, "Vui lòng nhập đủ thông tin");
     }
+  }
+
+  showAlertDialog(BuildContext context, String content) {
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Thông báo"),
+      content: Text(content),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 }
