@@ -41,5 +41,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+    	<string>App would like to access Camera for profile photo upload. Your photos won’t be shared without your permission</string>
+    <key>NSCameraUsageDescription</key>
+    	<string>App would like to access Camera for profile photo upload. Your photos won’t be shared without your permission</string>
 </dict>
 </plist>

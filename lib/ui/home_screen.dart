@@ -355,6 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ? Container(
             child: GridView.builder(
               shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
               itemCount: photos.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: getCrossAxisCount(photos.length),
