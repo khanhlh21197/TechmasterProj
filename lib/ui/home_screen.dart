@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/drawer_item.dart';
 import 'package:techmaster_lesson_2/model/issue.dart';
 import 'package:techmaster_lesson_2/model/issue_response.dart';
+import 'package:techmaster_lesson_2/model/user_response.dart';
 import 'package:techmaster_lesson_2/navigator.dart';
 import 'package:techmaster_lesson_2/shared_prefs_helper.dart';
 import 'package:techmaster_lesson_2/ui/account_screen.dart';
@@ -16,6 +16,10 @@ import 'package:techmaster_lesson_2/ui/report_screen.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  final UserResponse userResponse;
+
+  const HomeScreen({Key key, this.userResponse}) : super(key: key);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -66,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green,
+      backgroundColor: Colors.lightGreen,
       key: _scaffoldKey,
       appBar: new AppBar(
         title: Text(
@@ -115,7 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).pop();
-        navigatorPush(context, AccountScreen());
+        navigatorPush(
+          context,
+          AccountScreen(
+            userResponse: widget.userResponse,
+          ),
+        );
       },
       child: Container(
         color: Colors.green,
@@ -129,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                'assets/logo.png',
+              child: Image.network(
+                '$API_URL${widget.userResponse.avatar}',
                 width: 30,
                 height: 30,
               ),
@@ -145,13 +154,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Khanh Le',
+                    '${widget.userResponse.name}',
                     style: TextStyle(
                       color: Colors.white,
                     ),
                   ),
                   Text(
-                    '0963003197',
+                    '${widget.userResponse.phoneNumber}',
                     style: TextStyle(
                       color: Colors.white,
                     ),
@@ -397,11 +406,13 @@ class _HomeScreenState extends State<HomeScreen> {
     var queryParameters = r.toJson();
     var uri =
         Uri.https('http://report.bekhoe.vn', '/api/issues', queryParameters);
-    var response = await http.post(uri, headers: {
-      HttpHeaders.authorizationHeader: 'Token $token',
-      HttpHeaders.contentTypeHeader: 'application/json',
+    var response = await http.get(uri, headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
     });
-    print('_HomeScreenState.getIssues ${response.body}');
+    Map responseMap = jsonDecode(response.body);
+    print('_HomeScreenState.getIssues ${responseMap['errorCode']}');
   }
 }
 
