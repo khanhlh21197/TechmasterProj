@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightGreen,
+      backgroundColor: Colors.white,
       key: _scaffoldKey,
       appBar: new AppBar(
         title: Text(
@@ -265,14 +265,13 @@ class _HomeScreenState extends State<HomeScreen> {
         // issues = issueResponse.data.map((e) => Issue.fromJson(e)).toList();
         return issues.isNotEmpty
             ? Container(
-                margin: const EdgeInsets.symmetric(vertical: 16),
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemBuilder: (ctx, index) => buildItem(issues[index]),
                   itemCount: issues.length,
                   separatorBuilder: (BuildContext context, int index) {
                     return Container(
-                      height: 15,
+                      height: 5,
                     );
                   },
                 ),
@@ -287,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget buildItem(Issue issue) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
