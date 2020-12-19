@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:techmaster_lesson_2/lesson4/launching_screen.dart';
 import 'package:techmaster_lesson_2/ui/login_screen.dart';
 
 class MyApp extends StatelessWidget {
@@ -9,7 +10,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primaryColor: Colors.orange),
       // home: LayoutScreen(),
-      home: LoginScreen(),
+      home: LaunchingScreen(),
     );
   }
 }

@@ -4,9 +4,13 @@ import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:techmaster_lesson_2/format.dart';
+import 'package:techmaster_lesson_2/lesson4/home_screen.dart';
+import 'package:techmaster_lesson_2/lesson4/login_screen.dart';
 import 'package:techmaster_lesson_2/lesson4/photo_screen.dart';
 import 'package:techmaster_lesson_2/lesson4/web_view_screen.dart';
 import 'package:techmaster_lesson_2/navigator.dart';
+import 'package:techmaster_lesson_2/utilities/shared_preferences_manager.dart';
+import 'package:techmaster_lesson_2/utilities/string.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LaunchingScreen extends StatefulWidget {
@@ -15,6 +19,24 @@ class LaunchingScreen extends StatefulWidget {
 }
 
 class _LaunchingScreenState extends State<LaunchingScreen> {
+  @override
+  void initState() {
+    initData();
+    super.initState();
+  }
+
+  Future<void> initData() async {
+    await sharedPreferences.init();
+
+    final token = sharedPreferences.getString(key: tokenKey);
+    print('_LaunchingScreenState.initData $token');
+    if (token.isNullOrEmpty()) {
+      navigatorPush(context, LoginScreen());
+    } else {
+      navigatorPush(context, HomeScreen());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
