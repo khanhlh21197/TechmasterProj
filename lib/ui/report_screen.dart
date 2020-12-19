@@ -50,7 +50,26 @@ class _ReportScreenState extends State<ReportScreen> {
             height: 20,
           ),
           buildListImage(),
+          buildButton(),
         ],
+      ),
+    );
+  }
+
+  Widget buildButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.green,
+      ),
+      child: RaisedButton(
+        color: Colors.green,
+        onPressed: () {},
+        child: Text(
+          'Lưu',
+        ),
       ),
     );
   }

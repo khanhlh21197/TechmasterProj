@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/user.dart';
 import 'package:techmaster_lesson_2/model/user_response.dart';
-import 'package:techmaster_lesson_2/ui/contact_screen.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../loader.dart';
 import '../navigator.dart';
@@ -53,10 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
             appBar: AppBar(
               elevation: 0.0,
               backgroundColor: Colors.transparent,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
             ),
             body: GestureDetector(
               onTap: () {
@@ -193,10 +189,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget buildHotline2() {
+    const url = 'tel:19001008';
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => ContactScreen()));
+      onTap: () async {
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          throw 'Could not launch $url';
+        }
       },
       child: RichText(
         text: TextSpan(children: [
@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final response = await http
         .post('http://report.bekhoe.vn/api/accounts/login', body: json);
     print('_LoginScreenState.login: ${response.body}');
-
+    hideLoadingDialog();
     Map responseMap = jsonDecode(response.body);
     if (responseMap['code'] == 0) {
       await sharedPrefs.addStringToSF('phone', phoneController.text);
@@ -220,10 +220,10 @@ class _LoginScreenState extends State<LoginScreen> {
       UserResponse userResponse = UserResponse.fromJson(responseMap['data']);
       print('_LoginScreenState.tryLogin ${userResponse.token}');
       await sharedPrefs.addStringToSF('token', userResponse.token);
-      hideLoadingDialog();
       navigatorPush(context, HomeScreen(userResponse: userResponse));
     } else {
       print('_LoginScreenState.login: ${responseMap['message']}');
+      showAlertDialog(context, responseMap['message']);
     }
     // APIResponse apiResponse = APIResponse.fromJson(jsonDecode(response.body));
     // if (apiResponse.code == '0') {

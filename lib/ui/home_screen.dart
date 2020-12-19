@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:photo_view/photo_view.dart';
 import 'package:techmaster_lesson_2/model/drawer_item.dart';
 import 'package:techmaster_lesson_2/model/issue.dart';
 import 'package:techmaster_lesson_2/model/issue_response.dart';
@@ -11,6 +12,7 @@ import 'package:techmaster_lesson_2/shared_prefs_helper.dart';
 import 'package:techmaster_lesson_2/ui/account_screen.dart';
 import 'package:techmaster_lesson_2/ui/change_password_screen.dart';
 import 'package:techmaster_lesson_2/ui/contact_screen.dart';
+import 'package:techmaster_lesson_2/ui/photo_view.dart';
 import 'package:techmaster_lesson_2/ui/report_screen.dart';
 
 import 'login_screen.dart';
@@ -48,7 +50,14 @@ class _HomeScreenState extends State<HomeScreen> {
     HomeScreen(),
     ReportScreen(),
     ChangePasswordScreen(),
-    Container(),
+    Scaffold(
+      appBar: AppBar(
+        title: Text('Dieu khoan'),
+      ),
+      body: Container(
+        child: Center(child: Text('Dieu khoan')),
+      ),
+    ),
     ContactScreen(),
     Container(),
   ];
@@ -176,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildDrawerItem(DrawerItem item, int index) {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: () {
         onDrawerItemClick(index);
       },
@@ -282,6 +292,13 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
         color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey,
+            offset: Offset(0.0, 1.0), //(x,y)
+            blurRadius: 6.0,
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -379,10 +396,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildImageItem(String url) {
-    return Container(
-      child: Image.network(
-        '$API_URL$url',
-        fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        navigatorPush(context, PhotoViewScreen(imageUrl: '$API_URL$url'));
+      },
+      child: Container(
+        child: Image.network(
+          '$API_URL$url',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -426,4 +448,17 @@ class Request {
         'limit': limit,
         'offset': offset,
       };
+}
+
+class ImageDialog extends StatelessWidget {
+  final String imageUrl;
+
+  const ImageDialog({Key key, this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: PhotoView(imageProvider: NetworkImage(imageUrl)),
+    );
+  }
 }
