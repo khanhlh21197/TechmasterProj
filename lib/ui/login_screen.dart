@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:techmaster_lesson_2/model/login_response.dart';
 import 'package:techmaster_lesson_2/model/user.dart';
-import 'package:techmaster_lesson_2/model/user_response.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -87,7 +87,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextInputType.text, phoneController),
                   SizedBox(height: 16),
                   buildTextField('Mật khẩu', Icon(Icons.vpn_key),
-                      TextInputType.visiblePassword, passwordController),
+                      TextInputType.visiblePassword, passwordController,
+                      obscureText: true),
                   SizedBox(height: 16),
                   buildButton(),
                 ],
@@ -102,7 +103,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget buildTextField(String labelText, Icon prefixIcon,
-      TextInputType keyboardType, TextEditingController controller) {
+      TextInputType keyboardType, TextEditingController controller,
+      {bool obscureText = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -111,6 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
         controller: controller,
         keyboardType: keyboardType,
         autocorrect: false,
+        obscureText: obscureText,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
           labelText: labelText,
@@ -212,30 +215,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final response = await http
         .post('http://report.bekhoe.vn/api/accounts/login', body: json);
     print('_LoginScreenState.login: ${response.body}');
+    print('_LoginScreenState.login: ${jsonDecode(response.body)}');
     hideLoadingDialog();
-    Map responseMap = jsonDecode(response.body);
-    if (responseMap['code'] == 0) {
+
+    final loginResponse = loginResponseFromJson(response.body);
+    print('_LoginScreenState.tryLogin ${loginResponse.code}');
+    if (loginResponse.code == 0) {
       await sharedPrefs.addStringToSF('phone', phoneController.text);
       await sharedPrefs.addStringToSF('pass', passwordController.text);
-      UserResponse userResponse = UserResponse.fromJson(responseMap['data']);
-      print('_LoginScreenState.tryLogin ${userResponse.token}');
-      await sharedPrefs.addStringToSF('token', userResponse.token);
-      navigatorPush(context, HomeScreen(userResponse: userResponse));
+
+      await sharedPrefs.addStringToSF('token', loginResponse.data.token);
+      navigatorPush(context, HomeScreen(userResponse: loginResponse.data));
     } else {
-      print('_LoginScreenState.login: ${responseMap['message']}');
-      showAlertDialog(context, responseMap['message']);
+      showAlertDialog(context, loginResponse.message);
     }
-    // APIResponse apiResponse = APIResponse.fromJson(jsonDecode(response.body));
-    // if (apiResponse.code == '0') {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder: (context) => HomeScreen(),
-    //     ),
-    //   );
-    // } else {
-    //   print('_LoginScreenState.login: ${apiResponse.message}');
-    // }
   }
 
   void showLoadingDialog() {

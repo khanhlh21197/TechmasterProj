@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:techmaster_lesson_2/model/login_response.dart';
 import 'package:techmaster_lesson_2/model/user.dart';
 
 import '../loader.dart';
@@ -143,7 +142,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               String password = passwordController.text;
               String email = emailController.text;
               String address = addressController.text;
-              register(phone, name, password, email, address);
+              tryRegister(phone, name, password, email, address);
             },
             child: Text(
               'Đăng ký',
@@ -180,7 +179,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Future<http.Response> register(String phone, String name, String password,
+  Future<http.Response> tryRegister(String phone, String name, String password,
       String email, String address) async {
     if (phone.isNotEmpty && name.isNotEmpty && password.isNotEmpty) {
       showLoadingDialog();
@@ -195,14 +194,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final response = await http.post(
           'http://report.bekhoe.vn/api/accounts/Register',
           body: user.toJson());
-      Map responseMap = jsonDecode(response.body);
-      print('_SignUpScreenState.register ${response.body}');
-      if (responseMap['code'] == 0) {
+      final signUpResponse = loginResponseFromJson(response.body);
+
+      if (signUpResponse.code == 0) {
         Navigator.pop(context, user);
         hideLoadingDialog();
       } else {
         hideLoadingDialog();
-        showAlertDialog(context, responseMap['message']);
+        showAlertDialog(context, signUpResponse.message);
       }
     } else {
       showAlertDialog(context, "Vui lòng nhập đủ thông tin");

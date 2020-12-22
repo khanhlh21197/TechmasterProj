@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view.dart';
 import 'package:techmaster_lesson_2/model/drawer_item.dart';
-import 'package:techmaster_lesson_2/model/issue.dart';
 import 'package:techmaster_lesson_2/model/issue_response.dart';
-import 'package:techmaster_lesson_2/model/user_response.dart';
+import 'package:techmaster_lesson_2/model/login_response.dart';
 import 'package:techmaster_lesson_2/navigator.dart';
 import 'package:techmaster_lesson_2/shared_prefs_helper.dart';
 import 'package:techmaster_lesson_2/ui/account_screen.dart';
@@ -18,7 +15,7 @@ import 'package:techmaster_lesson_2/ui/report_screen.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  final UserResponse userResponse;
+  final Data userResponse;
 
   const HomeScreen({Key key, this.userResponse}) : super(key: key);
 
@@ -63,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   List<DrawerItem> drawerItems = List();
-  List<Issue> issues = List();
+  List<Datum> issues = List();
   SharedPrefsHelper sharedPrefsHelper;
 
   @override
@@ -141,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
           vertical: 8,
           horizontal: 16,
         ),
-        height: 70,
+        height: 80,
         width: double.infinity,
         child: Row(
           children: [
@@ -149,13 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
                 '$API_URL${widget.userResponse.avatar}',
-                width: 30,
-                height: 30,
+                width: 50,
+                height: 50,
               ),
             ),
             Container(
               margin: const EdgeInsets.only(
-                left: 10,
+                left: 15,
               ),
               height: double.infinity,
               child: Column(
@@ -166,6 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     '${widget.userResponse.name}',
                     style: TextStyle(
                       color: Colors.white,
+                      fontSize: 18,
                     ),
                   ),
                   Text(
@@ -255,38 +253,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildBody() {
-    return FutureBuilder(
-      future: DefaultAssetBundle.of(context).loadString('assets/test.json'),
-      builder: (context, snapshot) {
-        IssueResponse issueResponse =
-            IssueResponse.fromJson(jsonDecode(snapshot.data));
-        issues = issueResponse.data.map((e) => Issue.fromJson(e)).toList();
-        print('_HomeScreenState.buildBody ${issues.length}');
-        // issues = issueResponse.data.map((e) => Issue.fromJson(e)).toList();
-        return issues.isNotEmpty
-            ? Container(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemBuilder: (ctx, index) => buildItem(issues[index]),
-                  itemCount: issues.length,
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Container(
-                      height: 5,
-                    );
-                  },
-                ),
-              )
-            : Center(
-                child: CircularProgressIndicator(),
-              );
-      },
-    );
+    return issues.isNotEmpty
+        ? Container(
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemBuilder: (ctx, index) => buildItem(issues[index]),
+              itemCount: issues.length,
+              separatorBuilder: (BuildContext context, int index) {
+                return Container(
+                  height: 5,
+                );
+              },
+            ),
+          )
+        : Center(
+            child: CircularProgressIndicator(),
+          );
   }
 
-  Widget buildItem(Issue issue) {
+  Widget buildItem(Datum issue) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
@@ -309,10 +297,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(
-                        'assets/logo.png',
-                        width: 30,
-                        height: 30,
+                      child: Image.network(
+                        '$API_URL${issue.accountPublic.avatar}',
+                        width: 50,
+                        height: 50,
                       ),
                     ),
                     Container(
@@ -324,15 +312,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Khanh Le',
+                            issue.accountPublic.name,
                             style: TextStyle(
                               color: Colors.black,
+                              fontSize: 18,
                             ),
                           ),
+                          SizedBox(
+                            height: 5,
+                          ),
                           Text(
-                            '0963003197',
+                            '${issue.createdAt}',
                             style: TextStyle(
                               color: Colors.grey,
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -353,6 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 issue.title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
             ],
@@ -362,6 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 issue.content,
+                style: TextStyle(fontSize: 16),
               ),
             ],
           ),
@@ -421,29 +416,40 @@ class _HomeScreenState extends State<HomeScreen> {
     return 0;
   }
 
-  Future<void> getIssues() async {
+  Future<String> getIssues() async {
     String token = await sharedPrefsHelper.getStringValuesSF('token');
-    var r = Request(5, 0);
+    print('_HomeScreenState.getIssues $token');
+    var r = Request('5', '0');
+    // var queryParameters = {
+    //   'limit': '1',
+    //   'offset': '5',
+    // };
     var queryParameters = r.toJson();
-    var uri =
-        Uri.https('http://report.bekhoe.vn', '/api/issues', queryParameters);
-    var response = await http.get(uri, headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-    Map responseMap = jsonDecode(response.body);
-    print('_HomeScreenState.getIssues ${responseMap['errorCode']}');
+    var uri = Uri.http('report.bekhoe.vn', '/api/issues', queryParameters);
+    print('_HomeScreenState.getIssues $uri');
+    var response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    print('_HomeScreenState.getIssues ${response.statusCode}');
+    final issueResponse = issueResponseFromJson(response.body);
+    issues = issueResponse.data;
+    setState(() {});
+    return Future.value(response.body);
   }
 }
 
 class Request {
-  int limit;
-  int offset;
+  String limit;
+  String offset;
 
   Request(this.limit, this.offset);
 
-  Map<String, dynamic> toJson() => {
+  Map<String, String> toJson() => {
         'limit': limit,
         'offset': offset,
       };

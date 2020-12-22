@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:techmaster_lesson_2/model/user_response.dart';
+import 'package:techmaster_lesson_2/model/login_response.dart';
 
 class AccountScreen extends StatefulWidget {
-  final UserResponse userResponse;
+  final Data userResponse;
 
   const AccountScreen({Key key, this.userResponse}) : super(key: key);
 
