@@ -16,7 +16,7 @@ class User {
       this.userName,
       this.token});
 
-  factory User.fromJson(Map<dynamic, dynamic> json) {
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
         name: json['Name'],
         phone: json['PhoneNumber'],
@@ -27,7 +27,7 @@ class User {
         token: json['token']);
   }
 
-  Map<dynamic, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         'Name': name,
         'PhoneNumber': phone,
         'Email': email,

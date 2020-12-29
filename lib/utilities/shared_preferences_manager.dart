@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const tokenKey = 'token_value';
+const tokenKey = 'token';
 
 class SharedPreferencesManager {
   factory SharedPreferencesManager() => _manager;

@@ -1,16 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:techmaster_lesson_2/model/login_response.dart';
 import 'package:techmaster_lesson_2/model/user.dart';
 import 'package:techmaster_lesson_2/ui/home_screen.dart';
 import 'package:techmaster_lesson_2/ui/signup_screen.dart';
+import 'package:techmaster_lesson_2/utilities/api_service.dart';
+import 'package:techmaster_lesson_2/utilities/shared_preferences_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../loader.dart';
 import '../navigator.dart';
-import '../shared_prefs_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,20 +17,20 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
-  SharedPrefsHelper sharedPrefs;
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
 
   @override
   void initState() {
-    sharedPrefs = SharedPrefsHelper();
     getSharedPrefsValue();
     super.initState();
   }
 
   void getSharedPrefsValue() async {
-    phoneController.text = await sharedPrefs.getStringValuesSF('phone');
-    passwordController.text = await sharedPrefs.getStringValuesSF('pass');
+    await sharedPreferences.init();
+
+    phoneController.text = sharedPreferences.getString(key: 'phone');
+    passwordController.text = sharedPreferences.getString(key: 'pass');
   }
 
   @override
@@ -212,23 +210,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> tryLogin(Map json) async {
     showLoadingDialog();
-    final response = await http
-        .post('http://report.bekhoe.vn/api/accounts/login', body: json);
-    print('_LoginScreenState.login: ${response.body}');
-    print('_LoginScreenState.login: ${jsonDecode(response.body)}');
-    hideLoadingDialog();
+    apiService.request(
+      path: apiService.login,
+      parameters: json,
+      method: Method.post,
+      onSuccess: (response) async {
+        sharedPreferences.save('phone', phoneController.text);
+        sharedPreferences.save('pass', passwordController.text);
+        final data = Data.fromJson(response);
 
-    final loginResponse = loginResponseFromJson(response.body);
-    print('_LoginScreenState.tryLogin ${loginResponse.code}');
-    if (loginResponse.code == 0) {
-      await sharedPrefs.addStringToSF('phone', phoneController.text);
-      await sharedPrefs.addStringToSF('pass', passwordController.text);
-
-      await sharedPrefs.addStringToSF('token', loginResponse.data.token);
-      navigatorPush(context, HomeScreen(userResponse: loginResponse.data));
-    } else {
-      showAlertDialog(context, loginResponse.message);
-    }
+        sharedPreferences.save('token', data.token);
+        print('_LoginScreenState.tryLogin ${data.token}');
+        hideLoadingDialog();
+        navigatorPush(context, HomeScreen(userResponse: data));
+      },
+      onFailure: (message) {
+        Dialogs.showAlertDialog(context, message);
+        hideLoadingDialog();
+      },
+    );
+    // final response = await http
+    //     .post('http://report.bekhoe.vn/api/accounts/login', body: json);
+    // print('_LoginScreenState.login: ${response.body}');
+    // print('_LoginScreenState.login: ${jsonDecode(response.body)}');
+    // hideLoadingDialog();
+    //
+    // final loginResponse = loginResponseFromJson(response.body);
+    // print('_LoginScreenState.tryLogin ${loginResponse.code}');
+    // if (loginResponse.code == 0) {
+    //   await sharedPrefs.addStringToSF('phone', phoneController.text);
+    //   await sharedPrefs.addStringToSF('pass', passwordController.text);
+    //
+    //   await sharedPrefs.addStringToSF('token', loginResponse.data.token);
+    //   navigatorPush(context, HomeScreen(userResponse: loginResponse.data));
+    // } else {
+    //   showAlertDialog(context, loginResponse.message);
+    // }
   }
 
   void showLoadingDialog() {
@@ -237,31 +254,5 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void hideLoadingDialog() {
     Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-  }
-
-  showAlertDialog(BuildContext context, String content) {
-    Widget okButton = FlatButton(
-      child: Text("OK"),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Thông báo"),
-      content: Text(content),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
   }
 }

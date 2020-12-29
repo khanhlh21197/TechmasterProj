@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:techmaster_lesson_2/model/login_response.dart';
 import 'package:techmaster_lesson_2/model/user.dart';
+import 'package:techmaster_lesson_2/utilities/api_service.dart';
 
 import '../loader.dart';
 
@@ -191,18 +191,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
           email: email,
           address: address,
           userName: '');
-      final response = await http.post(
-          'http://report.bekhoe.vn/api/accounts/Register',
-          body: user.toJson());
-      final signUpResponse = loginResponseFromJson(response.body);
-
-      if (signUpResponse.code == 0) {
-        Navigator.pop(context, user);
-        hideLoadingDialog();
-      } else {
-        hideLoadingDialog();
-        showAlertDialog(context, signUpResponse.message);
-      }
+      apiService.request(
+        path: apiService.register,
+        parameters: user.toJson(),
+        onFailure: (message) {
+          hideLoadingDialog();
+          showAlertDialog(context, message);
+        },
+        onSuccess: (response) {
+          Navigator.pop(context, user);
+          hideLoadingDialog();
+        },
+        method: Method.post,
+      );
+      // final response = await http.post(
+      //     'http://report.bekhoe.vn/api/accounts/Register',
+      //     body: user.toJson());
+      // final signUpResponse = loginResponseFromJson(response.body);
+      //
+      // if (signUpResponse.code == 0) {
+      //   Navigator.pop(context, user);
+      //   hideLoadingDialog();
+      // } else {
+      //   hideLoadingDialog();
+      //   showAlertDialog(context, signUpResponse.message);
+      // }
     } else {
       showAlertDialog(context, "Vui lòng nhập đủ thông tin");
     }

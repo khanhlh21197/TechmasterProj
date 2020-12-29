@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:techmaster_lesson_2/loader.dart';
+import 'package:techmaster_lesson_2/utilities/api_service.dart';
 
 class ReportScreen extends StatefulWidget {
   @override
@@ -13,12 +15,15 @@ class _ReportScreenState extends State<ReportScreen> {
   final contentController = TextEditingController();
   PickedFile _imageFile;
   List<PickedFile> images = List();
+  List<String> imageUrls = List();
+  String uploadImage = '';
   dynamic _pickImageError;
   final picker = ImagePicker();
 
   @override
   void initState() {
     images.add(PickedFile(''));
+    imageUrls.add('');
     super.initState();
   }
 
@@ -39,19 +44,27 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget buildBody() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          buildTextField('Tiêu đề', labelController),
-          SizedBox(height: 15),
-          buildTextField('Nội dung', contentController),
-          SizedBox(
-            height: 20,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              buildTextField('Tiêu đề', labelController),
+              SizedBox(height: 15),
+              buildTextField('Nội dung', contentController),
+              SizedBox(
+                height: 20,
+              ),
+              buildListImage(),
+              buildButton(),
+            ],
           ),
-          buildListImage(),
-          buildButton(),
-        ],
+        ),
       ),
     );
   }
@@ -66,12 +79,41 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
       child: RaisedButton(
         color: Colors.green,
-        onPressed: () {},
+        onPressed: () {
+          tryPostIssue();
+        },
         child: Text(
           'Lưu',
         ),
       ),
     );
+  }
+
+  void tryPostIssue() {
+    String title = labelController.text;
+    String content = contentController.text;
+    if (title.isEmpty || content.isEmpty) {
+      Dialogs.showAlertDialog(context, 'Vui lòng nhập đủ thông tin!');
+      return;
+    } else {
+      final params = {
+        'Title': title,
+        'Content': content,
+        'Photos': uploadImage,
+      };
+
+      apiService.request(
+        path: apiService.postIssue,
+        method: Method.post,
+        parameters: params,
+        onFailure: (message) {
+          Dialogs.showAlertDialog(context, message);
+        },
+        onSuccess: (response) {
+          print(response);
+        },
+      );
+    }
   }
 
   Widget buildImageContainer() {
@@ -178,10 +220,21 @@ class _ReportScreenState extends State<ReportScreen> {
       final pickedFile = await picker.getImage(
         source: source,
       );
-      setState(() {
-        _imageFile = pickedFile;
-        images.add(_imageFile);
-      });
+
+      print('${pickedFile.path}');
+      _imageFile = pickedFile;
+      apiService.upload(
+          image: File(pickedFile.path),
+          onFailure: (message) {
+            print('$message');
+          },
+          onSuccess: (imagePath) {
+            print(imagePath);
+            uploadImage += imagePath + '|';
+            String path = apiService.baseUrl + imagePath;
+            imageUrls.add(path);
+            setState(() {});
+          });
     } catch (e) {
       setState(() {
         _pickImageError = e;
@@ -205,7 +258,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 childAspectRatio: 1.5,
               ),
               itemBuilder: (context, index) => buildImageItem(
-                images[index].path,
+                imageUrls[index],
                 index,
               ),
             ),
@@ -213,14 +266,14 @@ class _ReportScreenState extends State<ReportScreen> {
         : Container();
   }
 
-  Widget buildImageItem(String uri, int index) {
+  Widget buildImageItem(String url, int index) {
     return index == 0
         ? buildImageContainer()
         : Container(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                File(uri),
+              child: Image.network(
+                url,
                 fit: BoxFit.cover,
               ),
             ),

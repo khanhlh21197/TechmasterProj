@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:techmaster_lesson_2/loader.dart';
+import 'package:techmaster_lesson_2/utilities/api_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   @override
@@ -9,6 +11,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final oldPassController = TextEditingController();
   final newPassController = TextEditingController();
   final newPassAgainController = TextEditingController();
+
+  @override
+  void dispose() {
+    oldPassController.dispose();
+    newPassController.dispose();
+    newPassAgainController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +63,38 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           child: RaisedButton(
             child: Text('Lưu'),
             color: Colors.green,
-            onPressed: () {},
+            onPressed: () {
+              tryChangePassword();
+            },
           ),
         )
       ],
     );
+  }
+
+  void tryChangePassword() {
+    final newPass = newPassController.text;
+    final oldPass = oldPassController.text;
+    final newPassAgain = newPassAgainController.text;
+    if (newPass.isEmpty || oldPass.isEmpty || newPassAgain.isEmpty) {
+      Dialogs.showAlertDialog(context, 'Vui lòng nhập đủ thông tin');
+    } else {
+      final params = {
+        'OldPassword': oldPass,
+        'NewPassword': newPass,
+      };
+
+      apiService.request(
+          path: apiService.changePassword,
+          method: Method.post,
+          parameters: params,
+          onSuccess: (response) {
+            Dialogs.showAlertDialog(context, 'Đổi mật khẩu thành công!');
+          },
+          onFailure: (message) {
+            Dialogs.showAlertDialog(context, message);
+          });
+    }
   }
 
   Widget buildTextField(String labelText, TextEditingController controller,
