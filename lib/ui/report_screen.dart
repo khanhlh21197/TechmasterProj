@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:techmaster_lesson_2/loader.dart';
@@ -103,7 +104,7 @@ class _ReportScreenState extends State<ReportScreen> {
       };
 
       apiService.request(
-        path: apiService.postIssue,
+        path: apiService.getIssue,
         method: Method.post,
         parameters: params,
         onFailure: (message) {
@@ -272,9 +273,11 @@ class _ReportScreenState extends State<ReportScreen> {
         : Container(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                url,
+              child: CachedNetworkImage(
+                imageUrl: url,
                 fit: BoxFit.cover,
+                placeholder: (context, url) => CircularProgressIndicator(),
+                errorWidget: (context, url, error) => Icon(Icons.error),
               ),
             ),
           );

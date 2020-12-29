@@ -21,7 +21,7 @@ class ApiService {
   final profile = '/api/accounts/profile';
   final updateProfile = '/api/accounts/update';
   final changePassword = '/api/accounts/changePassword';
-  final postIssue = '/api/issues';
+  final getIssue = '/api/issues';
   var token = '';
 
   Future<void> request({
@@ -105,8 +105,12 @@ class ApiService {
       final code = json['code'];
       if (code == 0) {
         print('${json['data']}');
-      } else {}
-    } else {}
+      } else {
+        print('ApiService.upload ${response.statusCode}');
+      }
+    } else {
+      print('ApiService.upload ${response.statusCode}');
+    }
   }
 }
 

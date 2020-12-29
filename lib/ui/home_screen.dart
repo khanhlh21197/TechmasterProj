@@ -1,6 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view.dart';
+import 'package:techmaster_lesson_2/blocs/issue_bloc.dart';
 import 'package:techmaster_lesson_2/model/drawer_item.dart';
 import 'package:techmaster_lesson_2/model/issue_response.dart';
 import 'package:techmaster_lesson_2/model/login_response.dart';
@@ -26,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static const API_URL = 'http://report.bekhoe.vn';
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  IssueBloc bloc = IssueBloc();
   final icons = [
     Icons.menu,
     Icons.report,
@@ -60,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   List<DrawerItem> drawerItems = List();
-  List<Datum> issues = List();
   SharedPrefsHelper sharedPrefsHelper;
 
   @override
@@ -69,8 +70,13 @@ class _HomeScreenState extends State<HomeScreen> {
       drawerItems.add(DrawerItem(icons[i], titles[i]));
     }
     sharedPrefsHelper = SharedPrefsHelper();
-    getIssues();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    bloc.dispose();
+    super.dispose();
   }
 
   @override
@@ -253,8 +259,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildBody() {
-    return issues.isNotEmpty
-        ? Container(
+    return StreamBuilder(
+      stream: bloc.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          print('_HomeScreenState.buildBody *hien thi');
+          final issues = snapshot.data;
+
+          return Container(
             child: ListView.separated(
               shrinkWrap: true,
               itemBuilder: (ctx, index) => buildItem(issues[index]),
@@ -265,10 +277,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-          )
-        : Center(
-            child: CircularProgressIndicator(),
           );
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
   }
 
   Widget buildItem(Datum issue) {
@@ -395,9 +410,11 @@ class _HomeScreenState extends State<HomeScreen> {
         navigatorPush(context, PhotoViewScreen(imageUrl: '$API_URL$url'));
       },
       child: Container(
-        child: Image.network(
-          '$API_URL$url',
+        child: CachedNetworkImage(
           fit: BoxFit.cover,
+          imageUrl: "$API_URL$url",
+          placeholder: (context, url) => CircularProgressIndicator(),
+          errorWidget: (context, url, error) => Icon(Icons.error),
         ),
       ),
     );
@@ -415,44 +432,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return 0;
   }
-
-  Future<String> getIssues() async {
-    String token = await sharedPrefsHelper.getStringValuesSF('token');
-    print('_HomeScreenState.getIssues $token');
-    var r = Request('5', '0');
-    // var queryParameters = {
-    //   'limit': '1',
-    //   'offset': '5',
-    // };
-    var queryParameters = r.toJson();
-    var uri = Uri.http('report.bekhoe.vn', '/api/issues', queryParameters);
-    print('_HomeScreenState.getIssues $uri');
-    var response = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-    print('_HomeScreenState.getIssues ${response.statusCode}');
-    final issueResponse = issueResponseFromJson(response.body);
-    issues = issueResponse.data;
-    setState(() {});
-    return Future.value(response.body);
-  }
-}
-
-class Request {
-  String limit;
-  String offset;
-
-  Request(this.limit, this.offset);
-
-  Map<String, String> toJson() => {
-        'limit': limit,
-        'offset': offset,
-      };
 }
 
 class ImageDialog extends StatelessWidget {
